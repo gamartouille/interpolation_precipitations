@@ -1,0 +1,5 @@
+Ville x y
+Brest 145.7 6835.2
+Champs-sur-Marne 669.7 6860.2
+Toulouse 577.3 6273.7
+Forcalquier 923.1 6322.7
