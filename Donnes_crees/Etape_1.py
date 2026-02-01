@@ -49,7 +49,7 @@ if __name__ == "__main__":
         x = np.array([villes[1][i]])
         y = np.array([villes[2][i]])
 
-
+        print(f"\n\n--- Interpolations pour la ville de {villes[0][i]} ---\n\n")
         print(f"Interpolation Linéaire {villes[0][i]} : ", interp_lin(x_obs, y_obs, z_obs, x, y))
         print(f"Interpolation Par Voisin le Plus Proche {villes[0][i]} : ", interp_ppv(x_obs, y_obs, z_obs, x, y))
         print(f"Interpolation Inverse des Distances {villes[0][i]} : ", interp_inv(x_obs, y_obs, z_obs, x, y, p=2))
