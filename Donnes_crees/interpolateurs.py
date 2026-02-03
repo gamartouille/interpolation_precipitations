@@ -264,6 +264,10 @@ def moindres_carres(x_obs, y_obs, z_obs) :
     plt.legend()
     plt.grid()
     plt.show()
+
+def kriegage(x_obs, y_obs, z_obs, x_int, y_int):
+    z_int = np.nan * np.zeros(x_int.shape)
+    z_inc = np.nan * np.zeros(x_int.shape)
             
         
         
