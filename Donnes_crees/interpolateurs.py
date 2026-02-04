@@ -284,6 +284,8 @@ def interp_krg(x_obs, y_obs, z_obs, x_int, y_int, c0, a0):
     gamma_A[n, :n] = 1
     gamma_A[n, n] = 0
 
+    gamma_A_inv = np.linalg.inv(gamma_A)
+
     # construction de B, différent pour chaque point à interpoler
 
     for a in range(x_int.shape[0]):
@@ -297,12 +299,47 @@ def interp_krg(x_obs, y_obs, z_obs, x_int, y_int, c0, a0):
             gamma_B[-1] = 1
 
             gamma_B = gamma_B.reshape((-1,1))
-            lamb = np.linalg.solve(gamma_A, gamma_B)
+            lamb = gamma_A_inv @ gamma_B
             lamb = lamb.reshape((n+1,1))
             z_int[a,b] = np.sum(lamb[: -1]*z_obs)
             z_inc[a,b] = np. sum(lamb[: -1]*gamma_B[: -1]) + lamb[-1,0]
     
     return z_int, z_inc
+
+def interp_krg_pt(x_obs, y_obs, z_obs, x0, y0, c0, a0):
+
+    x_obs = x_obs.ravel()
+    y_obs = y_obs.ravel()
+    z_obs = z_obs.ravel()
+
+    n = len(x_obs)
+
+    dx = x_obs[:, None] - x_obs[None, :]
+    dy = y_obs[:, None] - y_obs[None, :]
+    h = np.sqrt(dx**2 + dy**2)
+
+    gamma_a = gamma(h, c0, a0)
+    np.fill_diagonal(gamma_a, 0)
+
+    gamma_A = np.zeros((n + 1, n + 1))
+    gamma_A[:n, :n] = gamma_a
+    gamma_A[:n, n] = 1
+    gamma_A[n, :n] = 1
+
+    gamma_A_inv = np.linalg.inv(gamma_A)
+
+    h0 = np.sqrt((x_obs - x0)**2 + (y_obs - y0)**2)
+    gamma_B = np.zeros(n + 1)
+    gamma_B[:-1] = gamma(h0, c0, a0)
+    gamma_B[-1] = 1
+
+    lamb = gamma_A_inv @ gamma_B
+
+    z_int = np.sum(lamb[:-1] * z_obs)
+    z_inc = np.sum(lamb[:-1] * gamma_B[:-1]) + lamb[-1]
+
+    return z_int, z_inc
+
 
 ############################# Visualisation ############################
 
