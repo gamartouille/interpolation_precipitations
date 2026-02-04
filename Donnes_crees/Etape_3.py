@@ -5,7 +5,18 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 def wilmott(ind_test, z_obs, err):
+    """Calcule l'indice de Wilmott.
 
+    Args:
+        ind_test (array): indices des points retirés du jeu de données
+        z_obs (array): vecteur des observations 
+        err (array): vecteur des erreurs 
+
+    Returns:
+        float: indice de Wilomott
+    """
+
+    # récupération des observations correspondant aux points retirés
     z_obs_extrait = z_obs[ind_test]
     z_pred = z_obs_extrait + err
     z_obs_moy = np.nanmean(z_obs_extrait)
@@ -17,8 +28,7 @@ def wilmott(ind_test, z_obs, err):
 
 
 if __name__ == '__main__':
-    FR_contours = charger_contours("/Users/clarabouvier/Desktop/interpol/interpolation_precipitations/Donnees_sources/FR_contour.txt")
-    x_obs, y_obs, z_obs = charger_precipitations('/Users/clarabouvier/Desktop/interpol/interpolation_precipitations/Donnees_sources/FR_precipitation_2025.txt')
+    x_obs, y_obs, z_obs = charger_precipitations('Donnees_sources/FR_precipitation_2025.txt')
     
     a0 = 578.6810308
     c0 = 67715.67450193148
@@ -58,12 +68,13 @@ if __name__ == '__main__':
         z_pred_spl = interp_splines(X_train, Y_train, Z_train, x0, y0)
         z_pred_krg = interp_krg_pt(X_train, Y_train, Z_train, x0, y0, c0, a0)[0]
 
+
         z_pred_lin_tab.append(z_pred_lin)
         z_pred_inv_tab.append(z_pred_inv)
         z_pred_spl_tab.append(z_pred_spl)
         z_pred_krg_tab.append(z_pred_krg)
 
-
+        # calcul de l'erreur
         err_lin.append(z_pred_lin - z_obs_)
         err_inv.append(z_pred_inv - z_obs_)
         err_spl.append(z_pred_spl - z_obs_)
@@ -80,6 +91,7 @@ if __name__ == '__main__':
     z_pred_spl_tab = np.array(z_pred_spl_tab).reshape((n_test,1))
     z_pred_krg_tab = np.array(z_pred_krg_tab).reshape((n_test,1))
 
+    # calculs des statistiques
 
     err_lin_moy = np.nanmean(err_lin)
     err_lin_std = np.nanstd(err_lin)
@@ -110,6 +122,8 @@ if __name__ == '__main__':
     print(f"erreur moyenne quadratique : {err_lin_rmse}")
     print(f"indice de Wilmott : {err_lin_wilmott}")
 
+    # diagramme de corrélation et histogramme des erreurs
+
     fig, ax = plt.subplots(nrows = 1, ncols = 2, figsize=(12, 5))
 
     ax[0].hist(err_lin, bins=50, edgecolor='black', alpha=0.7)
@@ -138,6 +152,8 @@ if __name__ == '__main__':
     print(f"écart-type de l'erreur :{err_inv_std} mm ")
     print(f"erreur moyenne quadratique : {err_inv_rmse}")
     print(f"indice de Wilmott : {err_inv_wilmott}")
+
+    # diagramme de corrélation et histogramme des erreurs
 
     fig, ax = plt.subplots(nrows = 1, ncols = 2, figsize=(12, 5))
 
@@ -168,6 +184,8 @@ if __name__ == '__main__':
     print(f"erreur moyenne quadratique : {err_spl_rmse}")
     print(f"indice de Wilmott : {err_spl_wilmott}")
 
+    # diagramme de corrélation et histogramme des erreurs
+
     fig, ax = plt.subplots(nrows = 1, ncols = 2, figsize=(12, 5))
 
     ax[0].hist(err_spl, bins=50, edgecolor='black', alpha=0.7)
@@ -196,6 +214,8 @@ if __name__ == '__main__':
     print(f"écart-type de l'erreur :{err_krg_std} mm ")
     print(f"erreur moyenne quadratique : {err_krg_rmse}")
     print(f"indice de Wilmott : {err_krg_wilmott}")
+
+    # diagramme de corrélation et histogramme des erreurs
 
     fig, ax = plt.subplots(nrows = 1, ncols = 2, figsize=(12, 5))
 

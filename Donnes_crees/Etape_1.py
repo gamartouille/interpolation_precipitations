@@ -48,7 +48,6 @@ if __name__ == "__main__":
     # kriegage par fitting cubique
 
     a0, c0 = moindres_carres(x_obs, y_obs, z_obs, hmax=800, nbin=20)
-    print(a0,c0)
 
 
     for i in range(len(villes[0])):

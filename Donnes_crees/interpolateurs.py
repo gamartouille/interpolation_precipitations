@@ -39,7 +39,7 @@ def interp_xxx(x_obs, y_obs, z_obs, x_int, y_int):
 
 ##LIN##
 def interp_lin(x_obs, y_obs, z_obs, x_int, y_int):
-    # Interpolation par ???
+    # Interpolation linéaire
     # x_obs, y_obs, z_obs : observations
     # [np.array dimension 1*n]
     # x_int, y_int, positions pour lesquelles on souhaite interpoler une valeur z_int
@@ -49,7 +49,7 @@ def interp_lin(x_obs, y_obs, z_obs, x_int, y_int):
     
     z_int = np.nan*np.zeros(x_int.shape)
     
-    # On construit la triangulation ; tri est un tableau de 3 colonnes, le nombre de ligne correspond au nombres de 
+    # on construit la triangulation ; tri est un tableau de 3 colonnes, le nombre de ligne correspond au nombres de 
     # triangles
     points = np.column_stack((x_obs[:,0], y_obs[:,0]))
     tri = delaunay(points)
@@ -57,13 +57,12 @@ def interp_lin(x_obs, y_obs, z_obs, x_int, y_int):
 
     for i in range(x_int.shape[0]):
         
-        # on recherche le numéro du triangle dans 
         pt = np.array([[x_int[i], y_int[i]]])
         idx_t = tri.find_simplex(pt)[0]
 
+        # si le point est effectivment dans un triangle 
         if idx_t != -1:
             
-
             # on récupère les numéros des sommets du triangle contenant le point (x0,y0)
             idx_s = tri.simplices[idx_t,:]
 
@@ -96,7 +95,7 @@ def interp_ppv(x_obs, y_obs, z_obs, x_int, y_int):
     # [np.array dimension 1*n]
     # x_int, y_int, positions pour lesquelles on souhaite interpoler une valeur z_int
     # [np array dimension m*p]
-    print(np.__version__)
+
     z_int = np.nan*np.zeros(x_int.shape)
     for i in np.arange(0,x_int.shape[0]):
         d = np.sqrt((x_int[i]-x_obs)**2+(y_int[i]-y_obs)**2)
@@ -138,6 +137,7 @@ def interp_splines(x_obs, y_obs, z_obs, x_int, y_int, degree=3):
 ##MOINDRES CARRES##
 
 def calcul_nuee(x_obs, y_obs, z_obs):
+
     ecarts_z = []
     distance_couple = []
 
@@ -262,6 +262,7 @@ def moindres_carres(x_obs, y_obs, z_obs, hmax, nbin) :
 def distance(x1, y1, x2, y2):
     return np.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
 
+# fonction pour le kriegage pour une grille
 def interp_krg(x_obs, y_obs, z_obs, x_int, y_int, c0, a0):
     z_int = np.nan * np.zeros(x_int.shape)
     z_inc = np.nan * np.zeros(x_int.shape)
@@ -306,6 +307,7 @@ def interp_krg(x_obs, y_obs, z_obs, x_int, y_int, c0, a0):
     
     return z_int, z_inc
 
+# fonction pour le kriegage pour un seul point 
 def interp_krg_pt(x_obs, y_obs, z_obs, x0, y0, c0, a0):
 
     x_obs = x_obs.ravel()
