@@ -89,8 +89,8 @@ def interpole_30km(x_obs, y_obs, z_obs, step, methode, FR_contours):
     return x_30, y_30, z_grid
 
 if __name__ == '__main__':
-    FR_contours = charger_contours("D:/ENSG/Geostatistiques/interpolation_precipitations/Donnees_sources/FR_contour.txt")
-    x_obs, y_obs, z_obs = charger_precipitations("D:/ENSG/Geostatistiques/interpolation_precipitations/Donnees_sources/FR_precipitation_2025.txt")
+    FR_contours = charger_contours("Donnees_sources/FR_contour.txt")
+    x_obs, y_obs, z_obs = charger_precipitations("Donnees_sources/FR_precipitation_2025.txt")
 
     x_grid_splines, y_grid_splines, z_grid_splines = interpole_30km(x_obs, y_obs, z_obs, 30, 'splines', FR_contours)
     x_grid_lin, y_grid_lin, z_grid_lin = interpole_30km(x_obs, y_obs, z_obs, 30, 'lin', FR_contours)
