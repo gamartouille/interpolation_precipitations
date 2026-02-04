@@ -33,6 +33,11 @@ if __name__ == '__main__':
     err_spl = []
     err_inv = []
     err_krg = []
+
+    z_pred_lin_tab = []
+    z_pred_inv_tab = []
+    z_pred_spl_tab = []
+    z_pred_krg_tab = []
     
     #tab_pred = []
     for i in ind_test:
@@ -53,6 +58,11 @@ if __name__ == '__main__':
         z_pred_inv = interp_inv(X_train, Y_train, Z_train, x0, y0)
         z_pred_spl = interp_splines(X_train, Y_train, Z_train, x0, y0)
 
+        z_pred_lin_tab.append(z_pred_lin)
+        z_pred_inv_tab.append(z_pred_inv)
+        z_pred_spl_tab.append(z_pred_spl)
+
+
         err_lin.append(z_pred_lin - z_obs_)
         err_inv.append(z_pred_inv - z_obs_)
         err_spl.append(z_pred_inv - z_obs_)
@@ -60,6 +70,10 @@ if __name__ == '__main__':
     err_lin = np.array(err_lin).reshape((n_test,1))
     err_inv = np.array(err_inv).reshape((n_test,1))
     err_spl = np.array(err_inv).reshape((n_test,1))
+
+    z_pred_lin_tab = np.array(z_pred_lin_tab).reshape((n_test,1))
+    z_pred_inv_tab = np.array(z_pred_inv_tab).reshape((n_test,1))
+    z_pred_spl_tab = np.array(z_pred_spl_tab).reshape((n_test,1))
 
 
     err_lin_moy = np.nanmean(err_lin)
@@ -84,11 +98,24 @@ if __name__ == '__main__':
     print(f"erreur moyenne quadratique : {err_lin_rmse}")
     print(f"indice de Wilmott : {err_lin_wilmott}")
 
-    plt.figure()
-    plt.hist(err_lin, bins=50)
-    plt.xlabel("erreur d'interpolation [mm]")
-    plt.ylabel("nb d'occurences")
-    plt.title(f"histogramme des erreurs d'interpolation linéaire")
+    fig, ax = plt.subplots(nrows = 1, ncols = 2, figsize=(12, 5))
+
+    ax[0].hist(err_lin, bins=50, edgecolor='black', alpha=0.7)
+    ax[0].set_xlabel("erreur d'interpolation [mm]")
+    ax[0].set_ylabel("nb d'occurences")
+    ax[0].set_title(f"histogramme des erreurs d'interpolation linéaire")
+    ax[0].grid(True, linestyle=':', alpha=0.6)
+
+    vmin = min(np.nanmin(z_obs[ind_test]), np.nanmin(z_pred_lin_tab))
+    vmax = max(np.nanmax(z_obs[ind_test]), np.nanmax(z_pred_lin_tab))
+    ax[1].scatter(z_obs[ind_test], z_pred_lin_tab, marker='+')
+    ax[1].plot([vmin, vmax], [vmin, vmax], linestyle='--', linewidth=1, color='r')
+    ax[1].set_xlabel('précipitation observée [mm]')
+    ax[1].set_ylabel('précipitation prédite [mm]')
+    ax[1].set_title(f"diagramme de corrélation \n de l'interpolation linéaire")
+    ax[1].grid(True, linestyle=':', alpha=0.6)
+
+    plt.tight_layout()
     plt.show()
 
     print(f"\n\n--- Interpolation par inverse des distances ---\n\n")
@@ -98,13 +125,25 @@ if __name__ == '__main__':
     print(f"erreur moyenne quadratique : {err_inv_rmse}")
     print(f"indice de Wilmott : {err_inv_wilmott}")
 
-    plt.figure()
-    plt.hist(err_inv, bins=50)
-    plt.xlabel("erreur d'interpolation [mm]")
-    plt.ylabel("nb d'occurences")
-    plt.title(f"histogramme des erreurs d'interpolation par inverse des distances")
-    plt.show()
+    fig, ax = plt.subplots(nrows = 1, ncols = 2, figsize=(12, 5))
 
+    ax[0].hist(err_inv, bins=50, edgecolor='black', alpha=0.7)
+    ax[0].set_xlabel("erreur d'interpolation [mm]")
+    ax[0].set_ylabel("nb d'occurences")
+    ax[0].set_title(f"histogramme des erreurs d'interpolation \n par inverse des distances")
+    ax[0].grid(True, linestyle=':', alpha=0.6)
+
+    vmin = min(np.nanmin(z_obs[ind_test]), np.nanmin(z_pred_inv_tab))
+    vmax = max(np.nanmax(z_obs[ind_test]), np.nanmax(z_pred_inv_tab))
+    ax[1].scatter(z_obs[ind_test], z_pred_inv_tab, marker='+')
+    ax[1].plot([vmin, vmax], [vmin, vmax], linestyle='--', linewidth=1, color='r')
+    ax[1].set_xlabel('précipitation observée [mm]')
+    ax[1].set_ylabel('précipitation prédite [mm]')
+    ax[1].set_title(f"diagramme de corrélation \n de l'interpolation par inverse des distances")
+    ax[1].grid(True, linestyle=':', alpha=0.6)
+
+    plt.tight_layout()
+    plt.show()
     print(f"\n\n--- Interpolation par splines ---\n\n")
 
     print(f"erreur moyenne : {err_spl_moy} mm")
@@ -112,13 +151,25 @@ if __name__ == '__main__':
     print(f"erreur moyenne quadratique : {err_spl_rmse}")
     print(f"indice de Wilmott : {err_spl_wilmott}")
 
-    plt.figure()
-    plt.hist(err_spl, bins=50)
-    plt.xlabel("erreur d'interpolation [mm]")
-    plt.ylabel("nb d'occurences")
-    plt.title(f"histogramme des erreurs d'interpolation par splines")
-    plt.show()
+    fig, ax = plt.subplots(nrows = 1, ncols = 2, figsize=(12, 5))
 
+    ax[0].hist(err_spl, bins=50, edgecolor='black', alpha=0.7)
+    ax[0].set_xlabel("erreur d'interpolation [mm]")
+    ax[0].set_ylabel("nb d'occurences")
+    ax[0].set_title(f"histogramme des erreurs d'interpolation \n par splines")
+    ax[0].grid(True, linestyle=':', alpha=0.6)
+
+    vmin = min(np.nanmin(z_obs[ind_test]), np.nanmin(z_pred_spl_tab))
+    vmax = max(np.nanmax(z_obs[ind_test]), np.nanmax(z_pred_spl_tab))
+    ax[1].scatter(z_obs[ind_test], z_pred_spl_tab, marker='+')
+    ax[1].plot([vmin, vmax], [vmin, vmax], linestyle='--', linewidth=1, color='r')
+    ax[1].set_xlabel('précipitation observée [mm]')
+    ax[1].set_ylabel('précipitation prédite [mm]')
+    ax[1].set_title(f"diagramme de corrélation \n de l'interpolation par splines")
+    ax[1].grid(True, linestyle=':', alpha=0.6)
+
+    plt.tight_layout()
+    plt.show()
 
 
 
