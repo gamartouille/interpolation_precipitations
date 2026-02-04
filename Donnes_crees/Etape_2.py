@@ -23,48 +23,50 @@ def carte_precipitations(x, y, z):
 
 def interpole_30km(x_obs, y_obs, z_obs, step, methode):
 
+    '''
+    Processus :
+    - on crée la grille d'interpolation avec un point tous les 30km
+    - on interpole nos observations avec cette grille théorique
+    - on ressort les z interpolés à caler dans la carte
+    '''
     interpoles = []
-    x_obs = np.sort(x_obs)
-    y_obs = np.sort(y_obs)
-    z_obs = np.sort(z_obs)
 
-    for i in range(x_obs.shape[0]):
-        x_a_interpoler = []
-        y_a_interpoler = []
-        z_a_interpoler = []
+    x_min, x_max = np.min(x_obs), np.max(x_obs)
+    y_min, y_max = np.min(y_obs), np.max(y_obs)
+    x_30 = np.arange(x_min, x_max, step)
+    y_30 = np.arange(y_min, y_max, step)
 
-        while len(x_a_interpoler) <= step:
-            print(x_obs[i:i+step])
-            x_a_interpoler.extend(x_obs[i:i+step]).astype(float)
-            y_a_interpoler.extend(y_obs[i:i+step])
-            z_a_interpoler.extend(z_obs[i:i+step])
-        
-        print(x_a_interpoler)
-        print(y_a_interpoler)
-        print(z_a_interpoler)
+    # Interpolation
+    if methode == 'lin':
+        #renvoie une valeur unique : le z interpolé sur la zone entrée
+        z_interpole = interp_lin(x_obs, y_obs, z_obs, x_30, y_30)
+        interpoles.append(z_interpole)
 
-        if methode == 'lin':
-            z_interpole = interp_lin(x_a_interpoler[:0], y_a_interpoler[:0], z_a_interpoler[:0], np.array([x_obs[i]]), np.array([y_obs[i]]))
-            interpoles.append(z_interpole)
+    elif methode == 'ppv':
+        z_interpole = interp_ppv(np.array(x_obs), np.array(y_obs), np.array(z_obs), np.array([x_30[i]]), np.array([y_30[i]]))
+        interpoles.append(z_interpole)
 
-        elif methode == 'ppv':
-            z_interpole = interp_ppv(np.array(x_a_interpoler), np.array(y_a_interpoler), np.array(z_a_interpoler), np.array([x_obs[i]]), np.array([y_obs[i]]))
-            interpoles.append(z_interpole)
+    elif methode == 'inv':
+        z_interpole = interp_inv(np.array(x_obs), np.array(y_obs), np.array(z_obs), np.array([x_30[i]]), np.array([y_30[i]]), p=2)
+        interpoles.append(z_interpole)
 
-        elif methode == 'inv':
-            z_interpole = interp_inv(np.array(x_a_interpoler), np.array(y_a_interpoler), np.array(z_a_interpoler), np.array([x_obs[i]]), np.array([y_obs[i]]), p=2)
-            interpoles.append(z_interpole)
+    elif methode == 'splines':
+        z_interpole = interp_splines(np.array(x_obs), np.array(y_obs), np.array(z_obs), np.array([x_30[i]]), np.array([y_30[i]]))
+        interpoles.append(z_interpole)
+    
+    x_30_final = x_30.tolist()
+    x_30_final.remove(x_30_final[0])
+    print(interpoles[0].tolist()[0])
+    interpoles.remove(interpoles[0].tolist()[0])
 
-        elif methode == 'splines':
-            z_interpole = interp_splines(np.array(x_a_interpoler), np.array(y_a_interpoler), np.array(z_a_interpoler), np.array([x_obs[i]]), np.array([y_obs[i]]))
-            interpoles.append(z_interpole)
-        
-    return np.array(interpoles)
+    print(len(x_30_final), len(y_30.tolist()), len(interpoles))
+    return x_30_final, y_30.tolist(), interpoles
 
 
 if __name__ == '__main__':
     FR_contours = charger_contours("D:/ENSG/Geostatistiques/interpolation_precipitations/Donnees_sources/FR_contour.txt")
     FR_precipitations = charger_precipitations("D:/ENSG/Geostatistiques/interpolation_precipitations/Donnees_sources/FR_precipitation_2025.txt")
     x_obs, y_obs, z_obs = charger_precipitations("D:/ENSG/Geostatistiques/interpolation_precipitations/Donnees_sources/FR_precipitation_2025.txt")
-    carte_France(FR_contours[0], FR_contours[1])
-    carte_precipitations(x_obs, y_obs, interpole_30km(x_obs, y_obs, z_obs, 30, 'lin'))
+    #carte_France(FR_contours[0], FR_contours[1])
+    #print(interpole_30km(x_obs, y_obs, z_obs, 30, 'lin'))
+    carte_precipitations(interpole_30km(x_obs, y_obs, z_obs, 30, 'lin')[0], interpole_30km(x_obs, y_obs, z_obs, 30, 'lin')[1], interpole_30km(x_obs, y_obs, z_obs, 30, 'lin')[2])

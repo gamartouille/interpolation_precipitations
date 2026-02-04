@@ -54,32 +54,32 @@ def interp_lin(x_obs, y_obs, z_obs, x_int, y_int):
     tri = delaunay(np.hstack((x_obs,y_obs)))
 
     for i in range(x_int.shape[0]):
-        
-        # on recherche le numéro du triangle dans 
-        idx_t = tri.find_simplex( np.array([x_int[i], y_int[i]]) )
+        for j in range(y_int.shape[0]):
+            # on recherche le numéro du triangle dans 
+            idx_t = tri.find_simplex( np.array([x_int[i], y_int[j]]) )
 
-        if idx_t != -1:
-            
+            if idx_t != -1:
+                
 
-            # on récupère les numéros des sommets du triangle contenant le point (x0,y0)
-            idx_s = tri.simplices[idx_t,:]
+                # on récupère les numéros des sommets du triangle contenant le point (x0,y0)
+                idx_s = tri.simplices[idx_t,:]
 
-            # x_obs, y_obs sont des tableaux à 2 dimensions ; il faut les préciser pour en extraire un scalaire
-            x1 = x_obs[ idx_s[0],0 ] ; y1 = y_obs[ idx_s[0],0 ]
-            x2 = x_obs[ idx_s[1],0 ] ; y2 = y_obs[ idx_s[1],0 ]
-            x3 = x_obs[ idx_s[2],0 ] ; y3 = y_obs[ idx_s[2],0 ]
+                # x_obs, y_obs sont des tableaux à 2 dimensions ; il faut les préciser pour en extraire un scalaire
+                x1 = x_obs[ idx_s[0],0 ] ; y1 = y_obs[ idx_s[0],0 ]
+                x2 = x_obs[ idx_s[1],0 ] ; y2 = y_obs[ idx_s[1],0 ]
+                x3 = x_obs[ idx_s[2],0 ] ; y3 = y_obs[ idx_s[2],0 ]
 
-            z1 = z_obs[ idx_s[0],0 ]
-            z2 = z_obs[ idx_s[1],0 ]
-            z3 = z_obs[ idx_s[2],0 ]
+                z1 = z_obs[ idx_s[0],0 ]
+                z2 = z_obs[ idx_s[1],0 ]
+                z3 = z_obs[ idx_s[2],0 ]
 
 
-            mat = np.array([[x1,y1,1],[x2,y2,1],[x3,y3,1]])
-            z_mat = np.array([z1,z2,z3])
+                mat = np.array([[x1,y1,1],[x2,y2,1],[x3,y3,1]])
+                z_mat = np.array([z1,z2,z3])
 
-            a, b, c = np.linalg.solve(mat, z_mat)
+                a, b, c = np.linalg.solve(mat, z_mat)
 
-            z_int[i] = a*x_int[i] + b*y_int[i] + c
+                z_int[i] = a*x_int[i] + b*y_int[j] + c
 
 
     return z_int
