@@ -82,7 +82,7 @@ if __name__ == '__main__':
     print(f"indice de Wilmott : {err_lin_wilmott}")
 
     plt.figure()
-    plt.hist(err_lin, bins=20)
+    plt.hist(err_lin, bins=50)
     plt.xlabel('erreur sur les précipitations [mm]')
     plt.ylabel("nb d'occurences")
     plt.title(f"histogramme des erreurs de précipitations \n par interpolation linéaire")
