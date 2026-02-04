@@ -51,12 +51,15 @@ def interp_lin(x_obs, y_obs, z_obs, x_int, y_int):
     
     # On construit la triangulation ; tri est un tableau de 3 colonnes, le nombre de ligne correspond au nombres de 
     # triangles
-    tri = delaunay(np.hstack((x_obs,y_obs)))
+    points = np.column_stack((x_obs[:,0], y_obs[:,0]))
+    tri = delaunay(points)
+
 
     for i in range(x_int.shape[0]):
         
         # on recherche le numéro du triangle dans 
-        idx_t = tri.find_simplex( np.array([x_int[i], y_int[i]]) )
+        pt = np.array([[x_int[i], y_int[i]]])
+        idx_t = tri.find_simplex(pt)[0]
 
         if idx_t != -1:
             
@@ -152,7 +155,7 @@ def calcul_nuee(x_obs, y_obs, z_obs):
 
 
 
-def calc_var_exp(h_raw, g_raw, hmax=160, nbin=20):
+def calc_var_exp(h_raw, g_raw, hmax, nbin):
     
     bins = np.linspace(0, hmax, nbin + 1)
     h_exp = []
@@ -193,9 +196,9 @@ def deriv_c(h, c, a):
         1
         )
 
-def moindres_carres(x_obs, y_obs, z_obs) :
+def moindres_carres(x_obs, y_obs, z_obs, hmax, nbin) :
     h, g = calcul_nuee(x_obs, y_obs, z_obs)
-    h_exp, g_exp = calc_var_exp(h, g, hmax=160, nbin=20)
+    h_exp, g_exp = calc_var_exp(h, g, hmax, nbin)
     
     
     # valeur approchée a0 et C0
@@ -227,7 +230,6 @@ def moindres_carres(x_obs, y_obs, z_obs) :
     
     
     while abs(X_chap[0]) > 10e-3 or abs(X_chap[1]) > 10e-3  :
-        print('a')
         
         gamma_c0_a0 = gamma(h_exp, c0, a0)
         Y = g_exp - gamma_c0_a0
@@ -245,8 +247,7 @@ def moindres_carres(x_obs, y_obs, z_obs) :
         
         print(X_chap[0],X_chap[1])
     
-    
-    
+
     g_fit = gamma(h_exp, c0, a0)
         
     plt.figure()
@@ -259,10 +260,12 @@ def moindres_carres(x_obs, y_obs, z_obs) :
     plt.grid()
     plt.show()
 
+    return a0, c0
+
 def distance(x1, y1, x2, y2):
     return np.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
 
-def kriegage(x_obs, y_obs, z_obs, x_int, y_int, c0, a0):
+def interp_krg(x_obs, y_obs, z_obs, x_int, y_int, c0, a0):
     z_int = np.nan * np.zeros(x_int.shape)
     z_inc = np.nan * np.zeros(x_int.shape)
 
@@ -298,7 +301,7 @@ def kriegage(x_obs, y_obs, z_obs, x_int, y_int, c0, a0):
 
             gamma_B = gamma_B.reshape((-1,1))
             lamb = np.linalg.solve(gamma_A, gamma_B)
-            lamb = lamb.reshape((189,1))
+            lamb = lamb.reshape((n+1,1))
             z_int[a,b] = np.sum(lamb[: -1]*z_obs)
             z_inc[a,b] = np. sum(lamb[: -1]*gamma_B[: -1]) + lamb[-1,0]
     
