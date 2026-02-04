@@ -51,12 +51,21 @@ def interp_lin(x_obs, y_obs, z_obs, x_int, y_int):
     
     # On construit la triangulation ; tri est un tableau de 3 colonnes, le nombre de ligne correspond au nombres de 
     # triangles
-    tri = delaunay(np.hstack((x_obs,y_obs)))
+    points = np.column_stack((x_obs[:,0], y_obs[:,0]))
+    tri = delaunay(points)
+
 
     for i in range(x_int.shape[0]):
+<<<<<<< HEAD
         for j in range(y_int.shape[0]):
             # on recherche le numéro du triangle dans 
             idx_t = tri.find_simplex( np.array([x_int[i], y_int[j]]) )
+=======
+        
+        # on recherche le numéro du triangle dans 
+        pt = np.array([[x_int[i], y_int[i]]])
+        idx_t = tri.find_simplex(pt)[0]
+>>>>>>> 3f6fe6bd703d88d5480ec6e79937ba8e294bb546
 
             if idx_t != -1:
                 
@@ -152,7 +161,7 @@ def calcul_nuee(x_obs, y_obs, z_obs):
 
 
 
-def calc_var_exp(h_raw, g_raw, hmax=160, nbin=20):
+def calc_var_exp(h_raw, g_raw, hmax, nbin):
     
     bins = np.linspace(0, hmax, nbin + 1)
     h_exp = []
@@ -167,11 +176,35 @@ def calc_var_exp(h_raw, g_raw, hmax=160, nbin=20):
 
     return np.array(h_exp), np.array(g_exp)
 
+def gamma(h, c, a):
+    h = np.asarray(h)
+    return np.where(
+        h <= a,
+        c*(7*(h**2/a**2)-(35/4)*(h**3/a**3) + (7/2)*(h**5/a**5) -(3/4)*(h**7/a**7)),
+        c
+    )
 
+def deriv_a(h, c, a):
+    h = np.asarray(h)
+    return np.where(
+        h <= a,
+        c*(-14*(h**2/a**3)-(35/4)*(-3)*(h**3/a**4) + (7/2)*(-5)*(h**5/a**6) -(3/4)*(-7)*(h**7/a**8)),
+        0
+    )
+    
+    
+def deriv_c(h, c, a):
+    h = np.asarray(h)
 
-def moindres_carres(x_obs, y_obs, z_obs) :
+    return np.where(
+        h <= a,
+        (7*(h**2/a**2)-(35/4)*(h**3/a**3) + (7/2)*(h**5/a**5) -(3/4)*(h**7/a**7)),
+        1
+        )
+
+def moindres_carres(x_obs, y_obs, z_obs, hmax, nbin) :
     h, g = calcul_nuee(x_obs, y_obs, z_obs)
-    h_exp, g_exp = calc_var_exp(h, g, hmax=160, nbin=20)
+    h_exp, g_exp = calc_var_exp(h, g, hmax, nbin)
     
     
     # valeur approchée a0 et C0
@@ -180,36 +213,6 @@ def moindres_carres(x_obs, y_obs, z_obs) :
     a0 = h[idx]
     
     # construction Y
-    
-    
-    
-    def gamma(h, c, a):
-        h = np.asarray(h)
-        return np.where(
-            h <= a,
-            c*(7*(h**2/a**2)-(35/4)*(h**3/a**3) + (7/2)*(h**5/a**5) -(3/4)*(h**7/a**7)),
-            c
-        )
-    
-    def deriv_a(h, c, a):
-        h = np.asarray(h)
-        return np.where(
-            h <= a,
-            c*(-14*(h**2/a**3)-(35/4)*(-3)*(h**3/a**4) + (7/2)*(-5)*(h**5/a**6) -(3/4)*(-7)*(h**7/a**8)),
-            0
-        )
-    
-    
-    def deriv_c(h, c, a):
-        h = np.asarray(h)
-    
-        return np.where(
-            h <= a,
-            (7*(h**2/a**2)-(35/4)*(h**3/a**3) + (7/2)*(h**5/a**5) -(3/4)*(h**7/a**7)),
-            1
-        )
-    
-    
     gamma_c0_a0 = gamma(h_exp, c0, a0)
     
     Y = g_exp - gamma_c0_a0
@@ -233,7 +236,6 @@ def moindres_carres(x_obs, y_obs, z_obs) :
     
     
     while abs(X_chap[0]) > 10e-3 or abs(X_chap[1]) > 10e-3  :
-        print('a')
         
         gamma_c0_a0 = gamma(h_exp, c0, a0)
         Y = g_exp - gamma_c0_a0
@@ -248,11 +250,7 @@ def moindres_carres(x_obs, y_obs, z_obs) :
         
         a0 = a0 + X_chap[0]
         c0 = c0 + X_chap[1]
-        
-        print(X_chap[0],X_chap[1])
-    
-    
-    
+
     g_fit = gamma(h_exp, c0, a0)
         
     plt.figure()
@@ -264,9 +262,54 @@ def moindres_carres(x_obs, y_obs, z_obs) :
     plt.legend()
     plt.grid()
     plt.show()
-            
-        
-        
+
+    return a0, c0
+
+def distance(x1, y1, x2, y2):
+    return np.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
+
+def interp_krg(x_obs, y_obs, z_obs, x_int, y_int, c0, a0):
+    z_int = np.nan * np.zeros(x_int.shape)
+    z_inc = np.nan * np.zeros(x_int.shape)
+
+    n = x_obs.shape[0]
+
+    # résolution de AX = B pour chaque point de la grille
+
+    # construction de A, constante pour chaque point à interpoler
+    gamma_a = np.zeros((n,n))
+    for i in range(n):
+        for j in range(n):
+            if i != j:
+                dist = distance(x_obs[i,0], y_obs[i,0], x_obs[j,0], y_obs[j,0])
+                gamma_a[i,j] = gamma(dist, c0, a0)
+
+    gamma_A = np.zeros((n+1, n+1))
+    gamma_A[:n,:n] = gamma_a
+    gamma_A[:n,n] = 1
+    gamma_A[n, :n] = 1
+    gamma_A[n, n] = 0
+
+    # construction de B, différent pour chaque point à interpoler
+
+    for a in range(x_int.shape[0]):
+        for b in range(y_int.shape[0]):
+
+            dx = x_obs - x_int[a, b]
+            dy = y_obs - y_int[a, b]
+            h = np.sqrt(dx**2 + dy**2)
+            gamma_B = np.zeros(n + 1)
+            gamma_B[:-1] = gamma(h, c0, a0).squeeze()
+            gamma_B[-1] = 1
+
+            gamma_B = gamma_B.reshape((-1,1))
+            lamb = np.linalg.solve(gamma_A, gamma_B)
+            lamb = lamb.reshape((n+1,1))
+            z_int[a,b] = np.sum(lamb[: -1]*z_obs)
+            z_inc[a,b] = np. sum(lamb[: -1]*gamma_B[: -1]) + lamb[-1,0]
+    
+    return z_int, z_inc
+
 ############################# Visualisation ############################
 
 def plot_contour_2d(x_grd ,y_grd ,z_grd, x_obs = np.array([]) ,y_obs = np.array([]), xlabel = "", ylabel = "", title = "", fileo = ""):
