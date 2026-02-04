@@ -244,9 +244,6 @@ def moindres_carres(x_obs, y_obs, z_obs, hmax, nbin) :
         
         a0 = a0 + X_chap[0]
         c0 = c0 + X_chap[1]
-        
-        print(X_chap[0],X_chap[1])
-    
 
     g_fit = gamma(h_exp, c0, a0)
         
@@ -278,7 +275,7 @@ def interp_krg(x_obs, y_obs, z_obs, x_int, y_int, c0, a0):
     for i in range(n):
         for j in range(n):
             if i != j:
-                dist = distance(x_obs[i,0], y_obs[j,0], x_obs[j,0], y_obs[j,0])
+                dist = distance(x_obs[i,0], y_obs[i,0], x_obs[j,0], y_obs[j,0])
                 gamma_a[i,j] = gamma(dist, c0, a0)
 
     gamma_A = np.zeros((n+1, n+1))

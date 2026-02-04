@@ -16,11 +16,6 @@ def wilmott(ind_test, z_obs, err):
     return 1 - (num/denom)
 
 
-
-
-
-
-
 if __name__ == '__main__':
     FR_contours = charger_contours("/Users/clarabouvier/Desktop/interpol/interpolation_precipitations/Donnees_sources/FR_contour.txt")
     x_obs, y_obs, z_obs = charger_precipitations('/Users/clarabouvier/Desktop/interpol/interpolation_precipitations/Donnees_sources/FR_precipitation_2025.txt')
@@ -56,12 +51,15 @@ if __name__ == '__main__':
         # interpolations
         z_pred_lin = interp_lin(X_train, Y_train, Z_train, x0, y0)
         z_pred_inv = interp_inv(X_train, Y_train, Z_train, x0, y0)
+        z_pred_spl = interp_splines(X_train, Y_train, Z_train, x0, y0)
 
         err_lin.append(z_pred_lin - z_obs_)
         err_inv.append(z_pred_inv - z_obs_)
+        err_spl.append(z_pred_inv - z_obs_)
 
     err_lin = np.array(err_lin).reshape((n_test,1))
     err_inv = np.array(err_inv).reshape((n_test,1))
+    err_spl = np.array(err_inv).reshape((n_test,1))
 
 
     err_lin_moy = np.nanmean(err_lin)
@@ -74,6 +72,11 @@ if __name__ == '__main__':
     err_inv_rmse = np.sqrt(np.nanmean(err_inv**2))
     err_inv_wilmott = wilmott(ind_test, z_obs, err_inv)
 
+    err_spl_moy = np.nanmean(err_spl)
+    err_spl_std = np.nanstd(err_spl)
+    err_spl_rmse = np.sqrt(np.nanmean(err_spl**2))
+    err_spl_wilmott = wilmott(ind_test, z_obs, err_spl)
+
     print(f"\n\n--- Interpolation linéaire ---\n\n")
 
     print(f"erreur moyenne : {err_lin_moy} mm")
@@ -83,12 +86,10 @@ if __name__ == '__main__':
 
     plt.figure()
     plt.hist(err_lin, bins=50)
-    plt.xlabel('erreur sur les précipitations [mm]')
+    plt.xlabel("erreur d'interpolation [mm]")
     plt.ylabel("nb d'occurences")
-    plt.title(f"histogramme des erreurs de précipitations \n par interpolation linéaire")
+    plt.title(f"histogramme des erreurs d'interpolation linéaire")
     plt.show()
-
-    print(err_lin)
 
     print(f"\n\n--- Interpolation par inverse des distances ---\n\n")
 
@@ -96,6 +97,27 @@ if __name__ == '__main__':
     print(f"écart-type de l'erreur :{err_inv_std} mm ")
     print(f"erreur moyenne quadratique : {err_inv_rmse}")
     print(f"indice de Wilmott : {err_inv_wilmott}")
+
+    plt.figure()
+    plt.hist(err_inv, bins=50)
+    plt.xlabel("erreur d'interpolation [mm]")
+    plt.ylabel("nb d'occurences")
+    plt.title(f"histogramme des erreurs d'interpolation par inverse des distances")
+    plt.show()
+
+    print(f"\n\n--- Interpolation par splines ---\n\n")
+
+    print(f"erreur moyenne : {err_spl_moy} mm")
+    print(f"écart-type de l'erreur :{err_spl_std} mm ")
+    print(f"erreur moyenne quadratique : {err_spl_rmse}")
+    print(f"indice de Wilmott : {err_spl_wilmott}")
+
+    plt.figure()
+    plt.hist(err_spl, bins=50)
+    plt.xlabel("erreur d'interpolation [mm]")
+    plt.ylabel("nb d'occurences")
+    plt.title(f"histogramme des erreurs d'interpolation par splines")
+    plt.show()
 
 
 

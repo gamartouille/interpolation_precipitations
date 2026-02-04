@@ -45,31 +45,26 @@ if __name__ == "__main__":
     villes = charger_villes("Donnees_sources/FR_coords_villes.txt") 
     x_obs, y_obs, z_obs = charger_precipitations("Donnees_sources/FR_precipitation_2025.txt")
 
-    #kriegage
+    #kriegage par fitting cubique
 
-    h_raw, g_raw = calcul_nuee(x_obs, y_obs, z_obs)
-
-    h_exp, g_exp = calc_var_exp(h_raw, g_raw, hmax=1000, nbin=20)
-
-    plt.figure()
-    plt.scatter(h_raw, g_raw, marker='+')
-    plt.scatter(h_exp, g_exp, color='r')
-    plt.show()
-
-    # a0, c0 = moindres_carres(x_obs, y_obs, z_obs, hmax=1000, nbin=20)
-
-    # print(interp_krg(x_obs, y_obs, z_obs,np.array(villes[1][0]).reshape((1,1)), np.array(villes[1][1]).reshape((1,1)), c0, a0))
+    a0, c0 = moindres_carres(x_obs, y_obs, z_obs, hmax=800, nbin=20)
 
 
-    # for i in range(len(villes[0])):
+    for i in range(len(villes[0])):
 
-    #     x = np.array([villes[1][i]])
-    #     y = np.array([villes[2][i]])
+        x = np.array([villes[1][i]])
+        y = np.array([villes[2][i]])
 
-    #     print(f"\n\n--- Interpolations pour la ville de {villes[0][i]} ---\n\n")
-    #     print(f"Interpolation Linéaire {villes[0][i]} : ", interp_lin(x_obs, y_obs, z_obs, x, y))
-    #     print(f"Interpolation Inverse des Distances {villes[0][i]} : ", interp_inv(x_obs, y_obs, z_obs, x, y, p=2))
-    #     print(f"Interpolation par Splines {villes[0][i]} : ", interp_splines(x_obs, y_obs, z_obs, x, y))
+        krg_z, krg_inc = interp_krg(x_obs, y_obs, z_obs, x.reshape((1,1)), y.reshape((1,1)), c0, a0)
+
+        print(f"\n\n--- Interpolations pour la ville de {villes[0][i]} ---\n\n")
+        print(f"Interpolation Linéaire {villes[0][i]} : ", interp_lin(x_obs, y_obs, z_obs, x, y), ' mm')
+        print(f"Interpolation Inverse des Distances {villes[0][i]} : ", interp_inv(x_obs, y_obs, z_obs, x, y, p=2), ' mm')
+        print(f"Interpolation par Splines {villes[0][i]} : ", interp_splines(x_obs, y_obs, z_obs, x, y), ' mm')
+        print(f"Interpolation par Krigeage {villes[0][i]} : ", krg_z, ' mm')
+        print(f"Incertitude interpolation par Kriegage : {villes[0][i]} ", np.sqrt(krg_inc), ' mm')
+
+
     
     
 
