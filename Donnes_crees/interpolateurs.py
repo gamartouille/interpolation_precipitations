@@ -39,58 +39,39 @@ def interp_xxx(x_obs, y_obs, z_obs, x_int, y_int):
 
 ##LIN##
 def interp_lin(x_obs, y_obs, z_obs, x_int, y_int):
-    # Interpolation par ???
-    # x_obs, y_obs, z_obs : observations
-    # [np.array dimension 1*n]
-    # x_int, y_int, positions pour lesquelles on souhaite interpoler une valeur z_int
-    # [np array dimension m*p]
-    
     from scipy.spatial import Delaunay as delaunay
     
-    z_int = np.nan*np.zeros(x_int.shape)
+    # S'assurer que x_int et y_int sont des vecteurs 1D
+    x_int = np.atleast_1d(x_int).flatten()
+    y_int = np.atleast_1d(y_int).flatten()
     
-    # On construit la triangulation ; tri est un tableau de 3 colonnes, le nombre de ligne correspond au nombres de 
-    # triangles
-    points = np.column_stack((x_obs[:,0], y_obs[:,0]))
+    z_int = np.nan * np.zeros(len(x_int))
+    
+    # Triangulation
+    points = np.column_stack((x_obs.flatten(), y_obs.flatten()))
     tri = delaunay(points)
-
-
-    for i in range(x_int.shape[0]):
-<<<<<<< HEAD
-        for j in range(y_int.shape[0]):
-            # on recherche le numéro du triangle dans 
-            idx_t = tri.find_simplex( np.array([x_int[i], y_int[j]]) )
-=======
-        
-        # on recherche le numéro du triangle dans 
+    
+    for i in range(len(x_int)):
         pt = np.array([[x_int[i], y_int[i]]])
         idx_t = tri.find_simplex(pt)[0]
->>>>>>> 3f6fe6bd703d88d5480ec6e79937ba8e294bb546
-
-            if idx_t != -1:
-                
-
-                # on récupère les numéros des sommets du triangle contenant le point (x0,y0)
-                idx_s = tri.simplices[idx_t,:]
-
-                # x_obs, y_obs sont des tableaux à 2 dimensions ; il faut les préciser pour en extraire un scalaire
-                x1 = x_obs[ idx_s[0],0 ] ; y1 = y_obs[ idx_s[0],0 ]
-                x2 = x_obs[ idx_s[1],0 ] ; y2 = y_obs[ idx_s[1],0 ]
-                x3 = x_obs[ idx_s[2],0 ] ; y3 = y_obs[ idx_s[2],0 ]
-
-                z1 = z_obs[ idx_s[0],0 ]
-                z2 = z_obs[ idx_s[1],0 ]
-                z3 = z_obs[ idx_s[2],0 ]
-
-
-                mat = np.array([[x1,y1,1],[x2,y2,1],[x3,y3,1]])
-                z_mat = np.array([z1,z2,z3])
-
-                a, b, c = np.linalg.solve(mat, z_mat)
-
-                z_int[i] = a*x_int[i] + b*y_int[j] + c
-
-
+        
+        if idx_t != -1:
+            idx_s = tri.simplices[idx_t, :]
+            
+            x1, y1 = x_obs.flatten()[idx_s[0]], y_obs.flatten()[idx_s[0]]
+            x2, y2 = x_obs.flatten()[idx_s[1]], y_obs.flatten()[idx_s[1]]
+            x3, y3 = x_obs.flatten()[idx_s[2]], y_obs.flatten()[idx_s[2]]
+            
+            z1 = z_obs.flatten()[idx_s[0]]
+            z2 = z_obs.flatten()[idx_s[1]]
+            z3 = z_obs.flatten()[idx_s[2]]
+            
+            mat = np.array([[x1, y1, 1], [x2, y2, 1], [x3, y3, 1]])
+            z_mat = np.array([z1, z2, z3])
+            
+            a, b, c = np.linalg.solve(mat, z_mat)
+            z_int[i] = a * x_int[i] + b * y_int[i] + c
+    
     return z_int
 
     
