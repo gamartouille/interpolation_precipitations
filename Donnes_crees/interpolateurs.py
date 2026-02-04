@@ -276,20 +276,19 @@ def interp_krg(x_obs, y_obs, z_obs, x_int, y_int, c0, a0):
     # construction de B, différent pour chaque point à interpoler
 
     for a in range(x_int.shape[0]):
-        for b in range(y_int.shape[0]):
 
-            dx = x_obs - x_int[a, b]
-            dy = y_obs - y_int[a, b]
-            h = np.sqrt(dx**2 + dy**2)
-            gamma_B = np.zeros(n + 1)
-            gamma_B[:-1] = gamma(h, c0, a0).squeeze()
-            gamma_B[-1] = 1
+        dx = x_obs - x_int[a]
+        dy = y_obs - y_int[a]
+        h = np.sqrt(dx**2 + dy**2)
+        gamma_B = np.zeros(n + 1)
+        gamma_B[:-1] = gamma(h, c0, a0).squeeze()
+        gamma_B[-1] = 1
 
-            gamma_B = gamma_B.reshape((-1,1))
-            lamb = gamma_A_inv @ gamma_B
-            lamb = lamb.reshape((n+1,1))
-            z_int[a,b] = np.sum(lamb[: -1]*z_obs)
-            z_inc[a,b] = np. sum(lamb[: -1]*gamma_B[: -1]) + lamb[-1,0]
+        gamma_B = gamma_B.reshape((-1,1))
+        lamb = gamma_A_inv @ gamma_B
+        lamb = lamb.reshape((n+1,1))
+        z_int[a] = np.sum(lamb[: -1]*z_obs)
+        z_inc[a] = np. sum(lamb[: -1]*gamma_B[: -1]) + lamb[-1,0]
     
     return z_int, z_inc
 
